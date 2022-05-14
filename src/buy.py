@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import List, Protocol
 import click
 from yahoo_fin_api import Client, YahooFinApi, Ticker
 
@@ -57,66 +58,111 @@ def fair_share_price(ticker: Ticker, min_rate_return: float, growth_rate: float,
 
 	return fair_share_price
 
+class Indicator(Protocol):
+	def execute(self, ticker: Ticker)-> str:
+		...
+
+class Service:
+	def __init__(self, *args: Indicator) -> None:
+		self.indicators = args
+
+	def execute(self, symbol)-> None:
+		yf_api = YahooFinApi(Client())
+		ticker = yf_api.get_all([symbol])[0]
+
+		print(f"Results for {ticker.title}:")
+
+		for indicator in self.indicators:
+			res = indicator.execute(ticker)
+			if res is None:
+				continue
+			print(res)
+
+class GrowthRateIndicator:
+	def execute(self, ticker: Ticker)-> str:
+		growth_rate = ticker.financial_data.earnings_growth
+		if growth_rate < 0:
+			return f"\t- growth rate is negative {growth_rate * 100}%"
+		else:
+			return f"\t- growth rate is positive {growth_rate * 100}%"
+
+class FreeCashFlowIndicator:
+	def execute(self, ticker: Ticker)-> str:
+		fcf = ticker.financial_data.free_cash_flow
+		if fcf > 0:
+			return f"\t- free cash flow is positive {fmt_amount(fcf)}"
+		else:
+			return f"\t- free cash flow is negative {fmt_amount(fcf)}"
+
+class BetaIndicator:
+	def execute(self, ticker: Ticker)-> str:
+		beta = ticker.summary_detail.beta
+		if beta is None:
+			return None
+		beta = round(beta, 2)
+
+		if beta > MAX_BETA:
+			return f"\t- beta is too high {beta}"
+		else:
+			return f"\t- beta is acceptable {beta}"
+
+class FairPriceIndicator:
+	def execute(self, ticker: Ticker)-> str:
+		price = current_price(ticker)
+		growth_rate = ticker.financial_data.earnings_growth
+		fair_price = fair_share_price(ticker, MIN_RATE_RETURN, growth_rate, 0)
+
+		if price < fair_price:
+			return f"\t- undervalued - current price {fmt_amount(price)} is lower than the fair price {fmt_amount(fair_price)}"
+		else:
+			return f"\t- overvalued - current price {fmt_amount(price)} is higher than the fair price {fmt_amount(fair_price)}"
+
+class ProfitMarginIndicator:
+	def execute(self, ticker: Ticker)-> str:
+		profit_margin = ticker.financial_data.profit_margins
+		profit_margin_fmt = round(profit_margin * 100, 2)
+
+		if profit_margin < MIN_PROFIT_MARGIN:
+			return f"\t- profit margin {profit_margin_fmt}% is too low"
+		else:
+			return f"\t- profit margin {profit_margin_fmt}% is ok"
+
+class PricePerEarningIndicator:
+	def execute(self, ticker: Ticker)-> str:
+		forward_pe = ticker.summary_detail.forward_pe
+		trailing_pe = ticker.summary_detail.trailing_pe
+		if forward_pe < trailing_pe:
+			return f"\t- forward PE is lower than trailing PE ({forward_pe} to {trailing_pe})"
+		else:
+			return f"\t- forward PE is higher than trailing PE ({forward_pe} to {trailing_pe})"
+
+class AssetsLiabilitiesIndicator:
+	def execute(self, ticker: Ticker)-> str:
+		has_more_assets = True
+		negative_years = 0
+		for bs in ticker.get_balance_sheets():
+			diff = bs.total_current_assets - bs.total_current_liabilities
+			if diff < 0:
+				has_more_assets = False
+				negative_years += 1
+
+		return "\t- has more assets than liabilities over last 4 years" \
+			if has_more_assets \
+			else f"\t- has more liabilities than assets in {negative_years} of the last 4 years"
 
 @click.command()
 @click.option("--symbol", default="AAPL", help="Symbol to analyse")
 def main(symbol: str):
+	Service(
+		FairPriceIndicator(),
+		GrowthRateIndicator(),
+		FreeCashFlowIndicator(),
+		BetaIndicator(),
+		ProfitMarginIndicator(),
+		PricePerEarningIndicator(),
+		AssetsLiabilitiesIndicator()
+	).execute(symbol)
 
-	yf_api = YahooFinApi(Client())
-	ticker = yf_api.get_all([symbol])[0]
-
-	print(f"Results for {ticker.title}:")
-
-	price = current_price(ticker)
-	growth_rate = ticker.financial_data.earnings_growth
-	fair_price = fair_share_price(ticker, MIN_RATE_RETURN, growth_rate, 0)
-
-	if price < fair_price:
-		print(f"\t- undervalued - current price {fmt_amount(price)} is lower than the fair price {fmt_amount(fair_price)}")
-	else:
-		print(f"\t- overvalued - current price {fmt_amount(price)} is higher than the fair price {fmt_amount(fair_price)}")
-
-	growth_rate = ticker.financial_data.earnings_growth
-	if growth_rate < 0:
-		print(f"\t- growth rate is negative {growth_rate * 100}%")
-	else:
-		print(f"\t- growth rate is positive {growth_rate * 100}%")
-
-	fcf = ticker.financial_data.free_cash_flow
-	if fcf > 0:
-		print(f"\t- free cash flow is positive {fmt_amount(fcf)}")
-	else:
-		print(f"\t- free cash flow is negative {fmt_amount(fcf)}")
-
-	if ticker.financial_data.profit_margins < MIN_PROFIT_MARGIN:
-		profit_margins = round(ticker.financial_data.profit_margins * 100, 2)
-		print(f"\t- profit margins {profit_margins}% is too low")
-
-	forward_pe = ticker.summary_detail.forward_pe
-	trailing_pe = ticker.summary_detail.trailing_pe
-	if forward_pe < trailing_pe:
-		print(f"\t- forward PE is lower than trailing PE ({forward_pe} to {trailing_pe})")
-
-	beta = ticker.summary_detail.beta
-	if beta is not None and beta > MAX_BETA:
-		print(f"\t- beta is too high {beta}")
-
-	print("\nBalance sheet:")
-	for bs in ticker.get_balance_sheets():
-		diff = bs.total_current_assets - bs.total_current_liabilities
-
-		print(f"- {bs.fmt_end_date()}:")
-		print(f"\t- Assets {fmt_amount(bs.total_current_assets)}")
-		print(f"\t- Liabilities {fmt_amount(bs.total_current_liabilities)}")
-		print(f"\t- Diff {fmt_amount(diff)}")
-
-	print("\nCashflow:")
-	for cf in ticker.get_cashflows():
-
-		print(f"- {cf.fmt_end_date()}:")
-		print(f"\t- Operating {fmt_amount(cf.total_cash_from_operating_activities)}")
-		print(f"\t- Investing {fmt_amount(cf.total_cashflows_from_investing_activities)}")
-		print(f"\t- Financing {fmt_amount(cf.total_cash_from_financing_activities)}")
 
 if __name__ == "__main__":
 	main()
