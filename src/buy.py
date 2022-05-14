@@ -2,24 +2,13 @@ from __future__ import annotations
 from typing import List, Protocol
 import click
 from yahoo_fin_api import Client, YahooFinApi, Ticker
+from src.utils import fmt_amount
+
 
 MIN_PROFIT_MARGIN = 0.1
 MAX_BETA = 3
 MIN_RATE_RETURN = 0.066
 
-def fmt_amount(amount: int | float)-> str:
-	prefix = "-" if amount < 0 else ""
-
-	if abs(amount) > 1_000_000_000:
-		return f"{prefix}${abs(round(amount / 1_000_000_000, 2))}b"
-
-	if abs(amount) > 1_000_000:
-		return f"{prefix}${abs(round(amount / 1_000_000, 2))}m"
-
-	if abs(amount) > 1_000:
-		return f"{prefix}${abs(round(amount / 1_000, 2))}k"
-
-	return f"{prefix}${abs(round(amount, 2))}"
 
 def current_price(ticker: Ticker)-> float:
 	if ticker.financial_data is None:
@@ -150,7 +139,7 @@ class AssetsLiabilitiesIndicator:
 			if has_more_assets \
 			else f"\t- has more liabilities than assets in {negative_years} of the last 4 years"
 
-@click.command()
+@click.command("fundamentals")
 @click.option("--symbol", default="AAPL", help="Symbol to analyse")
 def main(symbol: str):
 	Service(
