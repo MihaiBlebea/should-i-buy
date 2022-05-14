@@ -20,5 +20,3 @@ init:
 test:
 	./execute_test.sh 
 
-bundle:
-	./env/bin/pyinstaller --onefile ./src/buy.py
