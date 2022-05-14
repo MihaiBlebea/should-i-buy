@@ -67,10 +67,26 @@ def main(symbol: str):
 
 	print(f"Results for {ticker.title}:")
 
-	print(f"\t- current price {fmt_amount(current_price(ticker))}")
+	price = current_price(ticker)
+	growth_rate = ticker.financial_data.earnings_growth
+	fair_price = fair_share_price(ticker, MIN_RATE_RETURN, growth_rate, 0)
+
+	if price < fair_price:
+		print(f"\t- undervalued - current price {fmt_amount(price)} is lower than the fair price {fmt_amount(fair_price)}")
+	else:
+		print(f"\t- overvalued - current price {fmt_amount(price)} is higher than the fair price {fmt_amount(fair_price)}")
 
 	growth_rate = ticker.financial_data.earnings_growth
-	print(f"\t- fair price {fmt_amount(fair_share_price(ticker, MIN_RATE_RETURN, growth_rate, 0))}")
+	if growth_rate < 0:
+		print(f"\t- growth rate is negative {growth_rate * 100}%")
+	else:
+		print(f"\t- growth rate is positive {growth_rate * 100}%")
+
+	fcf = ticker.financial_data.free_cash_flow
+	if fcf > 0:
+		print(f"\t- free cash flow is positive {fmt_amount(fcf)}")
+	else:
+		print(f"\t- free cash flow is negative {fmt_amount(fcf)}")
 
 	if ticker.financial_data.profit_margins < MIN_PROFIT_MARGIN:
 		profit_margins = round(ticker.financial_data.profit_margins * 100, 2)
