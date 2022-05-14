@@ -1,14 +1,17 @@
 from prettytable import PrettyTable
-from yahoo_fin_api import Client, YahooFinApi, Ticker
+from yahoo_fin_api import Client, YahooFinApi
 import click
-from pprint import pprint
-
 from src.utils import fmt_amount
 
 
-@click.command("compare")
-@click.option("--symbols", "-s", multiple=True, help="Symbol to analyse")
-def main(symbols: list):
+@click.group()
+def cli():
+	pass
+
+@cli.command("compare")
+@click.option("--symbols", "-s", multiple=True, help="List of symbols to compare")
+def compare(symbols: list):
+	"""Compare a set of symbols based on indicators"""
 	yf_api = YahooFinApi(Client())
 	tickers = yf_api.get_all(symbols)
 
@@ -21,7 +24,7 @@ def main(symbols: list):
 		symbol = t.symbol
 		table.add_row([symbol, f"{profit_margin}%", fmt_amount(free_cashflow)])
 
-	print(table)
+	click.echo(table)
 
 if __name__ == "__main__":
-	main()
+	compare()

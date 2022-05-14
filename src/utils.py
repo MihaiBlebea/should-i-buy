@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+
 def fmt_amount(amount: int | float)-> str:
 	prefix = "-" if amount < 0 else ""
 

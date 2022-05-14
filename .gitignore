@@ -1,4 +1,4 @@
 env
-buy.spec
 dist
 build
+src/__pycache__

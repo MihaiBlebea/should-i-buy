@@ -139,9 +139,14 @@ class AssetsLiabilitiesIndicator:
 			if has_more_assets \
 			else f"\t- has more liabilities than assets in {negative_years} of the last 4 years"
 
-@click.command("fundamentals")
-@click.option("--symbol", default="AAPL", help="Symbol to analyse")
-def main(symbol: str):
+@click.group()
+def cli():
+	pass
+
+@cli.command("score")
+@click.option("--symbol", "-s", default="AAPL", help="Symbol to analyse")
+def score(symbol: str):
+	"""Score a symbol based on indicators"""
 	Service(
 		FairPriceIndicator(),
 		GrowthRateIndicator(),
@@ -154,4 +159,4 @@ def main(symbol: str):
 
 
 if __name__ == "__main__":
-	main()
+	score()
