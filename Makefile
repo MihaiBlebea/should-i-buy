@@ -20,14 +20,5 @@ init:
 test:
 	./execute_test.sh 
 
-build:
-	./env/bin/python3 setup.py bdist_wheel
-
-publish:
-	twine upload dist/* --verbose
-
-remove-old-builds:
-	rm -rf ./.eggs ./build ./dist ./yahoo_fin_api.egg-info
-
-check-typing:
-	./env/bin/mypy yahoo_fin_api
+bundle:
+	./env/bin/pyinstaller --onefile ./src/buy.py
