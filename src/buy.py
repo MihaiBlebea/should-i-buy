@@ -1,3 +1,4 @@
+from __future__ import annotations
 import click
 from yahoo_fin_api import Client, YahooFinApi, Ticker
 
