@@ -5,7 +5,6 @@ from pathlib import Path
 import shutil
 import os
 import json
-import pwd
 
 EXEC_FILE_NAME = "shouldibuy"
 HOME = Path.home()
@@ -19,9 +18,7 @@ def setup():
 	Path(f"{HOME}/.local/bin").mkdir(parents=True, exist_ok=True)
 
 	with open(f"{HOME}/.{EXEC_FILE_NAME}/portfolio.json", "w") as file:
-		file.write(json.dumps({
-			"portfolios": []
-		}))
+		file.write(json.dumps({}))
 
 	subprocess.call([
 		"./env/bin/pyinstaller",
