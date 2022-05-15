@@ -17,8 +17,10 @@ def setup():
 
 	Path(f"{HOME}/.local/bin").mkdir(parents=True, exist_ok=True)
 
-	with open(f"{HOME}/.{EXEC_FILE_NAME}/portfolio.json", "w") as file:
-		file.write(json.dumps({}))
+	portfolio_path = f"{HOME}/.{EXEC_FILE_NAME}/portfolio.json"
+	if Path(portfolio_path).is_file() == False:
+		with open(f"{HOME}/.{EXEC_FILE_NAME}/portfolio.json", "w") as file:
+			file.write(json.dumps({}))
 
 	subprocess.call([
 		"./env/bin/pyinstaller",

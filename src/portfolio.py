@@ -1,8 +1,10 @@
 from __future__ import annotations
 from yahoo_fin_api import Client, YahooFinApi
+from prettytable import PrettyTable
 import click
 import json
 from pathlib import Path
+from src.utils import fmt_amount
 
 HOME = Path.home()
 
@@ -22,7 +24,27 @@ def portfolio(name: str):
 		yf_api = YahooFinApi(Client())
 		tickers = yf_api.get_all([s for s in list(content[name].keys())])
 
-		print(tickers)
+		table = PrettyTable(["Symbol", "Weight", "Value"])
+		table.align = "l"
+
+		total_equity_value = 0
+		positions = {}
+		for t in tickers:
+			price = t.financial_data.current_price
+			q = content[name][t.symbol]
+			value = price * q
+			positions[t.symbol] = value
+			total_equity_value += value
+
+		for t in tickers:
+			table.add_row([
+				t.symbol, 
+				f"{round(positions[t.symbol] / total_equity_value, 2) * 100}%", 
+				fmt_amount(round(positions[t.symbol], 2))
+			])
+
+		print(table)
+
 
 @cli.command("update")
 @click.option("--name", "-n", help="Porfolio name to analyse")
