@@ -24,7 +24,7 @@ def portfolio(name: str):
 		yf_api = YahooFinApi(Client())
 		tickers = yf_api.get_all([s for s in list(content[name].keys())])
 
-		table = PrettyTable(["Symbol", "Weight", "Value"])
+		table = PrettyTable(["Symbol", "Weight", "Value", "Growth 1y"])
 		table.align = "l"
 
 		total_equity_value = 0
@@ -37,10 +37,16 @@ def portfolio(name: str):
 			total_equity_value += value
 
 		for t in tickers:
+			price = t.financial_data.current_price
+			quotes = yf_api.get_quote(t.symbol, "1y", "3mo")
+			start_price = quotes[0].close
+			growth = (price - start_price) / start_price
+
 			table.add_row([
 				t.symbol, 
 				f"{round(positions[t.symbol] / total_equity_value, 2) * 100}%", 
-				fmt_amount(round(positions[t.symbol], 2))
+				fmt_amount(round(positions[t.symbol], 2)),
+				f"{round(growth * 100, 2)}%"
 			])
 
 		print(table)
