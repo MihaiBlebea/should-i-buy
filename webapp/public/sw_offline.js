@@ -44,7 +44,10 @@ self.addEventListener("activate", event => {
 })
 
 self.addEventListener("fetch", event => {
-	console.log("Service worker fetched")
+	console.log("Service worker fetched req")
+	if (event.request.url.includes("chrome-extension")) {
+		return
+	}
 	event.respondWith(
 		fetch(event.request)
 			.then(response => {
