@@ -1,4 +1,4 @@
-FROM node AS build_webapp
+FROM node:17.0.0-bullseye AS build_webapp
 
 WORKDIR /output
 
