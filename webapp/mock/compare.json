@@ -1,0 +1,63 @@
+{
+	"indictors": [
+		"Profit margin",
+		"Positive balance",
+		"Free cash flow"
+	],
+	"symbols": [
+		{
+			"symbol": "AAPL",
+			"title": "Apple",
+			"indicators": [
+				{
+					"id": 1,
+					"value": 1.22
+				},
+				{
+					"id": 2,
+					"value": 1.33
+				},
+				{
+					"id": 3,
+					"value": 1.44
+				}
+			]
+		},
+		{
+			"symbol": "TSLA",
+			"title": "Tesla",
+			"indicators": [
+				{
+					"id": 1,
+					"value": 2.11
+				},
+				{
+					"id": 2,
+					"value": 2.22
+				},
+				{
+					"id": 3,
+					"value": 3.33
+				}
+			]
+		},
+		{
+			"symbol": "GOOGL",
+			"title": "Google",
+			"indicators": [
+				{
+					"id": 1,
+					"value": 4.11
+				},
+				{
+					"id": 2,
+					"value": 5.22
+				},
+				{
+					"id": 3,
+					"value": 6.33
+				}
+			]
+		}
+	]
+}

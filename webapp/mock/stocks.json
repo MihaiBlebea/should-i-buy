@@ -1,0 +1,20 @@
+{
+	"stocks": [
+		{
+			"title": "Apple",
+			"symbol": "AAPL"
+		},
+		{
+			"title": "Tesla",
+			"symbol": "TSLA"
+		},
+		{
+			"title": "Google",
+			"symbol": "GOOGL"
+		},
+		{
+			"title": "Paypal",
+			"symbol": "PPAL"
+		}
+	]
+}

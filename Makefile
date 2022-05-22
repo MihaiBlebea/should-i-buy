@@ -23,3 +23,13 @@ init:
 test:
 	./execute_test.sh 
 
+docker-build:
+	docker build -t shouldibuy:v1.0 .
+
+docker-run:
+	docker run -v ${PWD}/data:/app/data -d -p 8080:8080 --name shouldibuy shouldibuy:v1.0
+
+docker: docker-build docker-run
+
+docker-stop:
+	docker stop shouldibuy && docker rm shouldibuy
