@@ -20,6 +20,7 @@
 </template>
 
 <script>
+import config from "./../config"
 import axios from "axios"
 import Navbar from "./../components/Navbar.vue"
 import CompareTable from "./../components/CompareTable.vue"
@@ -47,7 +48,7 @@ export default {
 	},
 	methods: {
 		getCompareData() {
-			axios.get("http://localhost:8081/compare").then(result => {
+			axios.get(config.baseUrl + "/compare").then(result => {
 				this.symbols = result.data.symbols
 				this.indicators = result.data.indictors
 			}).catch(err => {

@@ -58,6 +58,7 @@
 </template>
 
 <script>
+import config from "./../config"
 import axios from "axios"
 
 export default {
@@ -94,7 +95,7 @@ export default {
 	},
 	methods: {
 		getStockData() {
-			axios.get("http://localhost:8081/stocks").then(result => {
+			axios.get(config.baseUrl + "/stocks").then(result => {
 				this.stocks = result.data.stocks
 			}).catch(err => {
 				console.error(err)
