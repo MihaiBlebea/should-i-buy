@@ -5,7 +5,7 @@ var config = {
 		baseUrl: "http://localhost:8081"
 	},
 	production: {
-		baseUrl: "https://shouldibuy.cap-rover.purpletreetech.com/"
+		baseUrl: "https://shouldibuy.cap-rover.purpletreetech.com/api/v1"
 	}
 }
 
