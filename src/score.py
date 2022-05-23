@@ -1,5 +1,6 @@
 from __future__ import annotations
 from typing import List, Protocol
+from dataclasses import dataclass
 import click
 from yahoo_fin_api import Client, YahooFinApi, Ticker
 from src.utils import fmt_amount
@@ -48,85 +49,69 @@ def fair_share_price(ticker: Ticker, min_rate_return: float, growth_rate: float,
 	return fair_share_price
 
 class Indicator(Protocol):
-	def execute(self, ticker: Ticker)-> str:
+	def execute(self, ticker: Ticker)-> Result | None:
 		...
 
+@dataclass
+class Result:
+	raw: int | float
+	fmt: str
+
 class Service:
-	def __init__(self, *args: Indicator) -> None:
+	def __init__(self, *args: Indicator) -> List[Result]:
 		self.indicators = args
 
 	def execute(self, symbol)-> None:
 		yf_api = YahooFinApi(Client())
 		ticker = yf_api.get_all([symbol])[0]
 
-		print(f"Results for {ticker.title}:")
-
+		results = []
 		for indicator in self.indicators:
 			res = indicator.execute(ticker)
 			if res is None:
 				continue
-			print(res)
+			results.append(res)
+		return results
 
 class GrowthRateIndicator:
-	def execute(self, ticker: Ticker)-> str:
+	def execute(self, ticker: Ticker)-> Result:
 		growth_rate = ticker.financial_data.earnings_growth
-		if growth_rate < 0:
-			return f"\t- growth rate is negative {growth_rate * 100}%"
-		else:
-			return f"\t- growth rate is positive {growth_rate * 100}%"
+		return Result(growth_rate, f"{growth_rate * 100}%")
 
 class FreeCashFlowIndicator:
-	def execute(self, ticker: Ticker)-> str:
+	def execute(self, ticker: Ticker)-> Result:
 		fcf = ticker.financial_data.free_cash_flow
-		if fcf > 0:
-			return f"\t- free cash flow is positive {fmt_amount(fcf)}"
-		else:
-			return f"\t- free cash flow is negative {fmt_amount(fcf)}"
+		return Result(fcf, fmt_amount(fcf))
 
 class BetaIndicator:
-	def execute(self, ticker: Ticker)-> str:
+	def execute(self, ticker: Ticker)-> Result | None:
 		beta = ticker.summary_detail.beta
 		if beta is None:
 			return None
 		beta = round(beta, 2)
-
-		if beta > MAX_BETA:
-			return f"\t- beta is too high {beta}"
-		else:
-			return f"\t- beta is acceptable {beta}"
+		return Result(beta, f"{beta}")
 
 class FairPriceIndicator:
-	def execute(self, ticker: Ticker)-> str:
-		price = current_price(ticker)
+	def execute(self, ticker: Ticker)-> Result:
+		# price = current_price(ticker)
 		growth_rate = ticker.financial_data.earnings_growth
 		fair_price = fair_share_price(ticker, MIN_RATE_RETURN, growth_rate, 0)
-
-		if price < fair_price:
-			return f"\t- undervalued - current price {fmt_amount(price)} is lower than the fair price {fmt_amount(fair_price)}"
-		else:
-			return f"\t- overvalued - current price {fmt_amount(price)} is higher than the fair price {fmt_amount(fair_price)}"
+		return Result(fair_price, fmt_amount(fair_price))
 
 class ProfitMarginIndicator:
-	def execute(self, ticker: Ticker)-> str:
+	def execute(self, ticker: Ticker)-> Result:
 		profit_margin = ticker.financial_data.profit_margins
-		profit_margin_fmt = round(profit_margin * 100, 2)
-
-		if profit_margin < MIN_PROFIT_MARGIN:
-			return f"\t- profit margin {profit_margin_fmt}% is too low"
-		else:
-			return f"\t- profit margin {profit_margin_fmt}% is ok"
+		profit_margin_fmt = f"{round(profit_margin * 100, 2)}%"
+		return Result(profit_margin, profit_margin_fmt)
 
 class PricePerEarningIndicator:
-	def execute(self, ticker: Ticker)-> str:
+	def execute(self, ticker: Ticker)-> Result:
 		forward_pe = ticker.summary_detail.forward_pe
 		trailing_pe = ticker.summary_detail.trailing_pe
-		if forward_pe < trailing_pe:
-			return f"\t- forward PE is lower than trailing PE ({forward_pe} to {trailing_pe})"
-		else:
-			return f"\t- forward PE is higher than trailing PE ({forward_pe} to {trailing_pe})"
+		return Result(forward_pe - trailing_pe, f"{forward_pe}/{trailing_pe}")
 
 class AssetsLiabilitiesIndicator:
-	def execute(self, ticker: Ticker)-> str:
+	def execute(self, ticker: Ticker)-> Result:
 		has_more_assets = True
 		negative_years = 0
 		for bs in ticker.get_balance_sheets():
@@ -134,10 +119,7 @@ class AssetsLiabilitiesIndicator:
 			if diff < 0:
 				has_more_assets = False
 				negative_years += 1
-
-		return "\t- has more assets than liabilities over last 4 years" \
-			if has_more_assets \
-			else f"\t- has more liabilities than assets in {negative_years} of the last 4 years"
+		return Result(has_more_assets, has_more_assets)
 
 @click.group()
 def cli():

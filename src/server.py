@@ -1,6 +1,7 @@
-from flask import Flask, jsonify, send_from_directory
+from flask import Flask, jsonify, send_from_directory, request
 from pathlib import Path
 import json
+from src.score import *
 
 cwd = Path(__file__).parent
 
@@ -15,11 +16,30 @@ def index():
 	return send_from_directory(f"{cwd}/../webapp/dist", "index.html")
 
 @app.route("/api/v1/compare")
-def compare():
-	with open(f"{cwd}/../webapp/mock/compare.json") as file:
-		compare_data = json.loads(file.read())
+def compare(methods=["GET"]):
+	# with open(f"{cwd}/../webapp/mock/compare.json") as file:
+	# 	compare_data = json.loads(file.read())
+	symbols = request.args.get("symbols").split(",")\
+		if request.args.get("symbols") is not None\
+		else []
 
-		return jsonify(compare_data)
+	symbols = [symbol.strip().upper() for symbol in symbols]
+	
+	results = []
+
+	for symbol in symbols:
+		res = Service(
+			FairPriceIndicator(),
+			GrowthRateIndicator(),
+			FreeCashFlowIndicator(),
+			BetaIndicator(),
+			ProfitMarginIndicator(),
+			PricePerEarningIndicator(),
+			AssetsLiabilitiesIndicator()
+		).execute(symbol)
+		print(res)
+
+	return jsonify({})
 
 @app.route("/api/v1/stocks")
 def stocks():
