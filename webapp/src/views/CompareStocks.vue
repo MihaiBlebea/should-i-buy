@@ -48,7 +48,7 @@ export default {
 	},
 	methods: {
 		getCompareData() {
-			axios.get(config.baseUrl + "/compare").then(result => {
+			axios.get(config.baseUrl + "/compare?symbols=" + this.selected.join(",")).then(result => {
 				this.symbols = result.data.symbols
 				this.indicators = result.data.indictors
 			}).catch(err => {
