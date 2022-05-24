@@ -9,7 +9,8 @@
 					v-on:selected="selectedStockHandler"
 				/>
 
-				<CompareTable 
+				<CompareTable
+					v-if="selected.length > 0"
 					:indicators="indicators" 
 					:symbols="selectedSymbols" 
 				/>
@@ -59,13 +60,13 @@ export default {
 			})
 		},
 		selectedStockHandler(selected) {
-			console.log(selected)
 			this.selected = selected
+			if (this.selected.length === 0) {
+				return
+			}
+			this.getCompareData()
 		}
 	},
-	mounted() {
-		this.getCompareData()
-	}
 }
 </script>
 

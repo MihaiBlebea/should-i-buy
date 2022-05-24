@@ -5,7 +5,7 @@
 			<div class="modal-background"></div>
 
 			<div class="row justify-content-center top mt-5">
-				<div class="col-6">
+				<div class="col-12 col-md-6">
 			
 					<div class="field">
 						<p class="control is-expanded has-icons-left">
