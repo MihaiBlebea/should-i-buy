@@ -2,6 +2,7 @@ from __future__ import annotations
 from typing import List, Protocol
 from dataclasses import dataclass
 import click
+from numpy import void
 from yahoo_fin_api import Client, YahooFinApi, Ticker
 from src.utils import fmt_amount
 
@@ -49,6 +50,9 @@ def fair_share_price(ticker: Ticker, min_rate_return: float, growth_rate: float,
 	return fair_share_price
 
 class Indicator(Protocol):
+	def get_title(self)-> str:
+		...
+
 	def execute(self, ticker: Ticker)-> Result | None:
 		...
 
@@ -58,10 +62,10 @@ class Result:
 	fmt: str
 
 class Service:
-	def __init__(self, *args: Indicator) -> List[Result]:
+	def __init__(self, *args: Indicator) -> void:
 		self.indicators = args
 
-	def execute(self, symbol)-> None:
+	def execute(self, symbol)-> List[Result]:
 		yf_api = YahooFinApi(Client())
 		ticker = yf_api.get_all([symbol])[0]
 
@@ -73,17 +77,29 @@ class Service:
 			results.append(res)
 		return results
 
+	def get_titles(self)-> List[str]:
+		return [indicator.get_title() for indicator in self.indicators]
+
 class GrowthRateIndicator:
+	def get_title(self)-> str:
+		return "Growth rate"
+
 	def execute(self, ticker: Ticker)-> Result:
 		growth_rate = ticker.financial_data.earnings_growth
 		return Result(growth_rate, f"{growth_rate * 100}%")
 
 class FreeCashFlowIndicator:
+	def get_title(self)-> str:
+		return "Free cashflow"
+
 	def execute(self, ticker: Ticker)-> Result:
 		fcf = ticker.financial_data.free_cash_flow
 		return Result(fcf, fmt_amount(fcf))
 
 class BetaIndicator:
+	def get_title(self)-> str:
+		return "Beta"
+
 	def execute(self, ticker: Ticker)-> Result | None:
 		beta = ticker.summary_detail.beta
 		if beta is None:
@@ -92,6 +108,9 @@ class BetaIndicator:
 		return Result(beta, f"{beta}")
 
 class FairPriceIndicator:
+	def get_title(self)-> str:
+		return "Fair price"
+
 	def execute(self, ticker: Ticker)-> Result:
 		# price = current_price(ticker)
 		growth_rate = ticker.financial_data.earnings_growth
@@ -99,18 +118,27 @@ class FairPriceIndicator:
 		return Result(fair_price, fmt_amount(fair_price))
 
 class ProfitMarginIndicator:
+	def get_title(self)-> str:
+		return "Profit margin"
+
 	def execute(self, ticker: Ticker)-> Result:
 		profit_margin = ticker.financial_data.profit_margins
 		profit_margin_fmt = f"{round(profit_margin * 100, 2)}%"
 		return Result(profit_margin, profit_margin_fmt)
 
 class PricePerEarningIndicator:
+	def get_title(self)-> str:
+		return "Price per earnings"
+
 	def execute(self, ticker: Ticker)-> Result:
 		forward_pe = ticker.summary_detail.forward_pe
 		trailing_pe = ticker.summary_detail.trailing_pe
 		return Result(forward_pe - trailing_pe, f"{forward_pe}/{trailing_pe}")
 
 class AssetsLiabilitiesIndicator:
+	def get_title(self)-> str:
+		return "Assets vs liabilities"
+
 	def execute(self, ticker: Ticker)-> Result:
 		has_more_assets = True
 		negative_years = 0

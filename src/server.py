@@ -25,21 +25,39 @@ def compare(methods=["GET"]):
 
 	symbols = [symbol.strip().upper() for symbol in symbols]
 	
-	results = []
+	service = Service(
+		FairPriceIndicator(),
+		GrowthRateIndicator(),
+		FreeCashFlowIndicator(),
+		BetaIndicator(),
+		ProfitMarginIndicator(),
+		PricePerEarningIndicator(),
+		AssetsLiabilitiesIndicator()
+	)
+
+	body = {
+		"indictors": service.get_titles(),
+		"symbols": []
+	}
 
 	for symbol in symbols:
-		res = Service(
-			FairPriceIndicator(),
-			GrowthRateIndicator(),
-			FreeCashFlowIndicator(),
-			BetaIndicator(),
-			ProfitMarginIndicator(),
-			PricePerEarningIndicator(),
-			AssetsLiabilitiesIndicator()
-		).execute(symbol)
-		print(res)
+		res = service.execute(symbol)
 
-	return jsonify({})
+		indicators = []
+		for r in res:
+			indicators.append({
+				"value": r.raw
+			})
+
+		body["symbols"].append(
+			{
+				"symbol": symbol,
+				"title": symbol,
+				"indicators": indicators
+			}
+		)
+
+	return jsonify(body)
 
 @app.route("/api/v1/stocks")
 def stocks():
