@@ -48,6 +48,9 @@ export default {
 	},
 	methods: {
 		getCompareData() {
+			if (this.selected.length === 0) {
+				return
+			}
 			axios.get(config.baseUrl + "/compare?symbols=" + this.selected.join(",")).then(result => {
 				this.symbols = result.data.symbols
 				this.indicators = result.data.indictors
