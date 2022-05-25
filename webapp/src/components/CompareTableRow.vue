@@ -1,6 +1,6 @@
 <template>
 	<div class="row justify-content-between">
-		<div class="col-md-6">{{ title }}</div>
+		<div class="col-3 col-md-6">{{ title }}</div>
 		<div class="col-md-6 d-flex justify-content-between flex-row-reverse">
 			<div v-for="(value, index) in values" :key="index">{{ value }}</div>
 		</div>

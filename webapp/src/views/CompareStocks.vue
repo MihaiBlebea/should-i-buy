@@ -61,6 +61,7 @@ export default {
 		},
 		selectedStockHandler(selected) {
 			this.selected = selected
+			console.log("Selected", selected)
 			if (this.selected.length === 0) {
 				return
 			}

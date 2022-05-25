@@ -53,7 +53,7 @@ export default {
 	},
 	methods: {
 		getValues(index) {
-			return this.symbols.map(symbol => symbol.indicators[index].value)
+			return this.symbols.map(symbol => symbol.indicators[index].fmt)
 		}
 	}
 }

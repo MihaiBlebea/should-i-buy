@@ -23,11 +23,11 @@ server.use((req, res, next) => {
 	// 	next()
 	// }
 
-	if (req.url === "/compare") {
+	if (req.path === "/compare") {
 		res.status(200).json(loadData("./mock/compare.json")) 
 	}
 
-	if (req.url === "/stocks") {
+	if (req.path === "/stocks") {
 		res.status(200).json(loadData("./mock/stocks.json")) 
 	}
 })

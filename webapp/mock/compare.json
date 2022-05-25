@@ -10,15 +10,15 @@
 			"title": "Apple",
 			"indicators": [
 				{
-					"id": 1,
+					"fmt": "1.22B",
 					"value": 1.22
 				},
 				{
-					"id": 2,
+					"fmt": "1.33B",
 					"value": 1.33
 				},
 				{
-					"id": 3,
+					"fmt": "1.44B",
 					"value": 1.44
 				}
 			]
@@ -28,15 +28,15 @@
 			"title": "Tesla",
 			"indicators": [
 				{
-					"id": 1,
+					"fmt": "2.11B",
 					"value": 2.11
 				},
 				{
-					"id": 2,
+					"fmt": "2.22B",
 					"value": 2.22
 				},
 				{
-					"id": 3,
+					"fmt": "3.33B",
 					"value": 3.33
 				}
 			]
@@ -46,15 +46,15 @@
 			"title": "Google",
 			"indicators": [
 				{
-					"id": 1,
+					"fmt": "4.11B",
 					"value": 4.11
 				},
 				{
-					"id": 2,
+					"fmt": "5.22B",
 					"value": 5.22
 				},
 				{
-					"id": 3,
+					"fmt": "6.33B",
 					"value": 6.33
 				}
 			]
