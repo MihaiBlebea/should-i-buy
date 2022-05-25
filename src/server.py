@@ -1,7 +1,8 @@
 from flask import Flask, jsonify, send_from_directory, request
 from pathlib import Path
 import json
-from src.score import *
+from yahoo_fin_api import Universe
+from src.compare import Service, FreeCashFlowIndicator
 
 cwd = Path(__file__).parent
 
@@ -17,54 +18,31 @@ def index():
 
 @app.route("/api/v1/compare")
 def compare(methods=["GET"]):
-	# with open(f"{cwd}/../webapp/mock/compare.json") as file:
-	# 	compare_data = json.loads(file.read())
 	symbols = request.args.get("symbols").split(",")\
 		if request.args.get("symbols") is not None\
 		else []
 
 	symbols = [symbol.strip().upper() for symbol in symbols]
 	
-	service = Service(
-		FairPriceIndicator(),
-		GrowthRateIndicator(),
-		FreeCashFlowIndicator(),
-		BetaIndicator(),
-		ProfitMarginIndicator(),
-		PricePerEarningIndicator(),
-		AssetsLiabilitiesIndicator()
-	)
+	service = Service()
+	service.add_indicators([FreeCashFlowIndicator()])
+	service.add_selected_symbols(symbols)
 
 	body = {
 		"indictors": service.get_titles(),
-		"symbols": []
+		"symbols": service.calculate()
 	}
-
-	for symbol in symbols:
-		res = service.execute(symbol)
-
-		indicators = []
-		for r in res:
-			indicators.append({
-				"value": r.raw
-			})
-
-		body["symbols"].append(
-			{
-				"symbol": symbol,
-				"title": symbol,
-				"indicators": indicators
-			}
-		)
 
 	return jsonify(body)
 
 @app.route("/api/v1/stocks")
 def stocks():
-	with open(f"{cwd}/../webapp/mock/stocks.json") as file:
-		stocks_data = json.loads(file.read())
-
-		return jsonify(stocks_data)
+	stocks = [
+		{"title": symbol, "symbol": symbol} for symbol in Universe.get_freetrade_universe()
+	]
+	return jsonify({
+		"stocks": stocks
+	})
 
 if __name__ == "__main__":
 	app.run(host="0.0.0.0", port=8080)

@@ -3,7 +3,7 @@
 setup: create-env init
 
 create-env:
-	python3 -m venv env
+	python3.10 -m venv env
 
 install:
 	./env/bin/python3 -m pip install $(package)
