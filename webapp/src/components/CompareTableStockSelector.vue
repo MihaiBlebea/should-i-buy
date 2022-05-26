@@ -120,6 +120,7 @@ export default {
 			}
 
 			this.selected.push(stock.symbol)
+            this.search = ""
 		},
 		removeStock(stock) {
 			this.selected = this.selected.filter(sel => {
